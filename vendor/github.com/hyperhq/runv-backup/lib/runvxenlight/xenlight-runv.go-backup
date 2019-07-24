@@ -80,12 +80,10 @@ static int runvxl_domain_create_new(libxl_ctx *ctx, runvxl_domain_config *config
     d_config.channels[0].name = config->hyper_name;
     d_config.channels[0].connection = LIBXL_CHANNEL_CONNECTION_SOCKET;
     d_config.channels[0].u.socket.path = config->hyper_path;
-    d_config.channels[0].devid = 1;
 
     d_config.channels[1].name = config->tty_name;
     d_config.channels[1].connection = LIBXL_CHANNEL_CONNECTION_SOCKET;
     d_config.channels[1].u.socket.path = config->tty_path;
-    d_config.channels[0].devid = 2;
 
     d_config.c_info.type = config->dom_type;
 
@@ -151,7 +149,7 @@ int runvxl_add_nic(libxl_ctx *ctx, int32_t domid, int id, char *bridge, char *de
     //memcpy(nic.mac, mac, 6);
 
     ret = libxl_device_nic_add(ctx, domid, &nic, 0);
-	libxl_device_nic_dispose(&nic);
+    libxl_device_nic_dispose(&nic);
     return ret;
 }
 
@@ -277,7 +275,7 @@ type DomainConfig struct {
 	Binfo BuildInfo  `json:"b_info"`
 	//Disks    []DiskInfo    `json:"disks"`
 	Channels []ChannelInfo `json:"channels"`
-	P9       []P9Info      `json:"p9s"`
+	P9       []P9Info      `json:"p9"`
 
 	domType int
 }

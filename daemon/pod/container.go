@@ -223,7 +223,7 @@ func (c *Container) InfoStatus() *apitypes.ContainerStatus {
 		s.Phase = "running"
 		s.Running.StartedAt = c.status.StartedAt.Format(time.RFC3339)
 	}
-	c.Log(DEBUG, "retrive info %#v from status %#v", s, c.status)
+	/* c.Log(DEBUG, "retrive info %#v from status %#v", s, c.status) */
 	return s
 }
 

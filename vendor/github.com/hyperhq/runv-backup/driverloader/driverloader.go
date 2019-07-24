@@ -43,14 +43,12 @@ func Probe(driver string) (hd hypervisor.HypervisorDriver, err error) {
 		}
 	case "xenpv":
 		xpd := xenpv.InitDriver()
-        glog.V(1).Infof("Driver xenpv loaded")
 		if xpd != nil {
 			glog.V(1).Infof("Driver xenpv loaded")
 			return xpd, nil
 		}
 	case "xen", "":
 		xd := xen.InitDriver()
-        glog.V(1).Infof("Driver \"xen\" loaded")
 		if xd != nil {
 			glog.V(1).Infof("Driver \"xen\" loaded")
 			return xd, nil

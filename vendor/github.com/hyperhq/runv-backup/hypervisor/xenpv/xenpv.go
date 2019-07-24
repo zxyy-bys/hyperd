@@ -6,8 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-    "time"
-	"os"
+	"time"
 	"os/exec"
 
 	"github.com/golang/glog"
@@ -67,38 +66,19 @@ func (xd *XenPvDriver) LoadContext(persisted map[string]interface{}) (hypervisor
 		return nil, fmt.Errorf("wrong driver type %v in persist info, expect %v", t, xd.Name())
 	}
 
-/*     name, ok := persisted["name"]
- *     if !ok {
- *         return nil, fmt.Errorf("there is no xenpv domain name")
- *     }
- *
- *     id, err := xd.ctx.DomainQualifierToId(name.(string))
- *     if err != nil {
- *         return nil, fmt.Errorf("cannot find domain whose name is %v", name)
- *     } */
-    var domid int
+	name, ok := persisted["name"]
+	if !ok {
+		return nil, fmt.Errorf("there is no xenpv domain name")
+	}
 
-    d, ok := persisted["domid"]
-    if !ok {
-        return nil, fmt.Errorf("cannot read the dom id info from persist info")
-    }
-    switch d.(type) {
-    case float64:
-        domid = (int)(d.(float64))
-        if domid <= 0 {
-            return nil, fmt.Errorf("loaded wrong domid %d", domid)
-        }
-        //if HyperxlDomainCheck(xd.Ctx, (uint32)(domid)) != 0 {
-        //	return nil, fmt.Errorf("cannot load domain %d, not exist", domid)
-        //}
-    default:
-        return nil, fmt.Errorf("wrong domid type in persist info")
-    }
+	id, err := xd.ctx.DomainQualifierToId(name.(string))
+	if err != nil {
+		return nil, fmt.Errorf("cannot find domain whose name is %v", name)
+	}
 
 	return &XenPvContext{
 		driver: xd,
-		/* domId:  id, */
-        domId:  xl.Domid(domid),
+		domId:  id,
 	}, nil
 }
 
@@ -111,7 +91,6 @@ func (xd *XenPvDriver) SupportVmSocket() bool {
 }
 
 func (xc *XenPvContext) Launch(ctx *hypervisor.VmContext) {
-    fmt.Fprintf(os.Stderr,"bys:xenpv launch\n");
 	if xc.driver.executable == "" {
 		glog.Errorf("can not find xl executable")
 		ctx.Hub <- &hypervisor.VmStartFailEvent{Message: "can not find xl executable"}
@@ -170,28 +149,18 @@ func (xc *XenPvContext) Launch(ctx *hypervisor.VmContext) {
 		return
 	}
 
-    /* var dat map[string]interface{}
-    * json.Unmarshal(b, &dat)
-    * dat["on_poweroff"] = "destroy"
-    * dat["on_reboot"] = "destroy"
-    * dat["on_soft_reset"] = "destroy"
-    * fmt.Println("=======printing config=======")
-    * fmt.Println(dat)
-    * b, _ = json.Marshal(dat) */
-    fmt.Println(string(b))
-
-    xctx := xc.driver.ctx
-    domid, err := xctx.CreateNewDomainFromJson(string(b))
-    if err != nil {
-        glog.Errorf("fail to create xen pv domain: %v", err)
-        xctx.DestroyDomainByName(ctx.Id)
+	xctx := xc.driver.ctx
+	domid, err := xctx.CreateNewDomainFromJson(string(b))
+	if err != nil {
+		glog.Errorf("fail to create xen pv domain: %v", err)
+		xctx.DestroyDomainByName(ctx.Id)
 		ctx.Hub <- &hypervisor.VmStartFailEvent{Message: err.Error()}
 		return
 	}
 
 	glog.Infof("create success, domid: %v\n", domid)
 
-	/* time.Sleep(20*time.Second); */
+	time.Sleep(20*time.Second);
 
 	xc.domId = xl.Domid(domid)
 
@@ -207,43 +176,18 @@ func (xc *XenPvContext) Associate(ctx *hypervisor.VmContext) {
 }
 
 func (xc *XenPvContext) Dump() (map[string]interface{}, error) {
-    if xc.domId <= 0 {
-        return nil, fmt.Errorf("Dom id is invalid: %d", xc.domId)
-    }
-
-    return map[string]interface{}{
-        "hypervisor": "xenpv",
-        "domid":      xc.domId,
-        //"name": xc.driver.ctx.ctx.Id,
-    }, nil
+	return nil, nil
 }
 
 func (xc *XenPvContext) Shutdown(ctx *hypervisor.VmContext) {
-    glog.Infof("=======Shutdown is called=======")
-	go func() {
-		res := xc.driver.ctx.DestroyDomain(xc.domId)
-		if res == nil {
-			ctx.Hub <- &hypervisor.VmExit{}
-		}
-	}()
-	/* go xc.driver.ctx.DestroyDomain(xc.domId) */
+	go xc.driver.ctx.DestroyDomain(xc.domId)
 }
 
 func (xc *XenPvContext) Kill(ctx *hypervisor.VmContext) {
-	glog.Infof("=======Kill is called=======")
-    go func(){
-        time.Sleep(500 * time.Millisecond)
-        //cmd := exec.Command("xl", "destroy", string(xc.domId))
-        //cmd.Run()
-        //ctx.Hub <- &hypervisor.VmKilledEvent{Success: true}
-        res := xc.driver.ctx.DestroyDomain(xc.domId)
-        ctx.Hub <- &hypervisor.VmKilledEvent{Success: res == nil}
-	}()	  
-
-	/* go func() {
-	 *     xc.Shutdown(ctx)
-	 *     ctx.Hub <- &hypervisor.VmKilledEvent{Success: true}
-	 * }() */
+	go func() {
+		xc.Shutdown(ctx)
+		ctx.Hub <- &hypervisor.VmKilledEvent{Success: true}
+	}()
 }
 
 func (xc *XenPvContext) Stats(ctx *hypervisor.VmContext) (*types.PodStats, error) {

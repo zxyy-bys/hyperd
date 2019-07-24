@@ -565,7 +565,7 @@ static inline int hyperxl_nic_add(libxl_ctx* ctx, uint32_t domid, hyperxl_nic_co
     nic.model = strdup("e1000");
     nic.ip = strdup(config->ip);
     nic.bridge = strdup(config->bridge);
-    nic.nictype = LIBXL_NIC_TYPE_VIF;
+    nic.nictype = LIBXL_NIC_TYPE_VIF_IOEMU;
     nic.ifname = strdup(config->ifname);
     nic.gatewaydev = strdup(config->gatewaydev);
     if (config->mac != NULL) {

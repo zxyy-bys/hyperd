@@ -19,7 +19,7 @@ func startSandbox(f factory.Factory, cpu, mem int, kernel, initrd string) (vm *h
 	if cpu <= 0 {
 		cpu = DEFAULT_CPU
 	}
-	if mem <= 0 {
+	if mem <= DEFAULT_MEM {
 		mem = DEFAULT_MEM
 	}
 
